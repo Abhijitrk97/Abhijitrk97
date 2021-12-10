@@ -1,4 +1,4 @@
-- 👋 Hi, I’m @Abhijitrk97
+- 👋 Hi, I’m Abhijit Kunjiraman
 - 👀 I’m interested in Data Science
 - 🌱 I’m currently learning ORACLE SQL
 - 💞️ I’m looking to collaborate on SQL based projects
