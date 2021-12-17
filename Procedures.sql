@@ -846,3 +846,38 @@ end;
 /
 
 
+
+
+
+
+create or replace procedure populateamount(
+x_finorderid orders.orderid%type
+)
+as
+countfinorderid number:=0;
+finamount orders.amount%type := 0;
+s_invalorderid exception;
+begin
+select count(*) into countfinorderid from orders where orderid = x_finorderid;
+if countfinorderid < 1 then
+raise s_invalorderid;
+end if;
+
+finamount:=getamount(x_finorderid);
+
+UPDATE orders
+set amount=finamount
+where orderid=x_finorderid;
+
+
+exception
+
+    when s_invalorderid then
+        DBMS_OUTPUT.PUT_LINE('Orderid does not exist');
+        
+end;
+/
+
+
+
+
