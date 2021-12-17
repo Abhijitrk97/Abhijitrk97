@@ -880,4 +880,89 @@ end;
 
 
 
+create or replace PROCEDURE completetransaction(
+x_transorderid transactions.orderid%type,
+x_modeofpayment transactions.modeof_payment%type,
+x_cardtype transactions.card_type%type,
+x_cardnumber transactions.card_number%type,
+x_cardexpirydate transactions.card_expirydate%type,
+x_transaction_date transactions.transaction_date%type
+)
+AS
+counttransorder NUMBER:=0;
+s_transorderid EXCEPTION;
+s_transorderidnotexist EXCEPTION;
+s_modeofpayment EXCEPTION;
+s_modeofpaymentinv EXCEPTION;
+s_cardtypeinv EXCEPTION;
+s_cardtypenull EXCEPTION;
+s_cardnumbernull EXCEPTION;
+s_invcardnum EXCEPTION;
+s_cardexpired EXCEPTION;
+BEGIN
 
+IF x_transorderid IS NULL THEN
+    RAISE s_transorderid;
+    
+SELECT COUNT(*) INTO counttransorder
+from transactions
+where orderid=x_transorderid;
+
+IF counttransorder<1 THEN
+    RAISE s_transorderidnotexist;
+
+IF x_modeofpayment IS NULL THEN
+    RAISE s_modeofpayment;
+    
+IF x_modeofpayment NOT IN ('CREDIT','DEBIT') THEN
+    RAISE s_modeofpaymentINV;
+    
+IF x_cardtype IS NULL THEN
+    RAISE s_cardtypenull;  
+IF x_cardtype NOT IN ('VISA','MASTERCARD') THEN
+    RAISE s_cardtypeinv;
+IF x_cardnumber IS NULL THEN
+    RAISE s_cardnumbernull;  
+IF is_numeric(x_cardnumber)=0 THEN
+    RAISE s_invcardnum;
+IF (TO_DATE(x_cardexpirydate,'MM-YY')-SYSDATE)<1 THEN
+    RAISE s_cardexpired;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+
+
+
+UPDATE transactions
+SET modeof_payment=x_modeofpayment, card_type=x_cardtype, card_number=x_cardtype, transaction_date= sysdate, card_expirydate=x_cardexpirydate
+WHERE orderid=x_transorderid;
+
+EXCEPTION
+
+WHEN s_transorderid THEN
+    DBMS_OUTPUT.PUT_LINE('Orderid CANNOT BE null');
+WHEN s_transorderidnotexist THEN
+    DBMS_OUTPUT.PUT_LINE('Orderid not generated yet');
+WHEN s_modeofpayment THEN
+    DBMS_OUTPUT.PUT_LINE('Mode of payment cant be null');
+WHEN s_modeofpaymentinv THEN
+    DBMS_OUTPUT.PUT_LINE('Mode of payment can only be either credit or debit');
+WHEN s_cardtypeinv THEN
+    DBMS_OUTPUT.PUT_LINE('card type can only be VISA OR MASTERCARD');
+WHEN s_cardtypenull THEN
+    DBMS_OUTPUT.PUT_LINE('card type cannot be null');
+WHEN s_cardnumbernull THEN
+    DBMS_OUTPUT.PUT_LINE('card number slot empty please enter card number');
+WHEN s_invcardnum THEN
+    DBMS_OUTPUT.PUT_LINE('card number is invalid and only be numeric');
+WHEN s_cardexpired THEN
+    DBMS_OUTPUT.PUT_LINE('Card is expired');
+
+END;
+/
