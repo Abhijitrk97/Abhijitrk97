@@ -746,3 +746,103 @@ end;
 
 
  
+
+ 
+create sequence seq_orders start with 1000
+increment by 1;
+
+create sequence seq_transaction start with 1000
+increment by 1;
+
+set SERVEROUTPUT ON;
+
+
+create or replace procedure procgenorderid(
+x_customerid orders.customerid%type,
+x_deliveryaddress orders.delivery_address%TYPE
+)
+as
+transidnum number:= seq_transaction.nextval;
+orderidnum number := seq_orders.nextval;
+countcustid number:=0;
+s_customerid exception;
+s_customeridnotfound exception;
+s_deliveryaddressisnull exception;
+
+begin
+if x_customerid IS NULL
+then raise s_customerid;
+end if;
+
+if x_deliveryaddress IS NULL
+then raise s_deliveryaddressisnull;
+end if;
+
+select count(*) into countcustid from customers where customerid = x_customerid;
+if countcustid<1 then
+raise s_customeridnotfound;
+end if;
+
+
+
+insert into transactions(transaction_id,orderid)
+values(transidnum, orderidnum);
+insert into orders (orderid,customerid,delivery_address, transaction_id, order_date)
+values(orderidnum, x_customerid, x_deliveryaddress, transidnum, sysdate);
+
+DBMS_OUTPUT.PUT_LINE('Your orderid is '||to_char(orderidnum));
+
+EXCEPTION
+WHEN s_customerid THEN
+    DBMS_OUTPUT.PUT_LINE('CUSTOMERID cannot be null');
+WHEN s_customeridnotfound THEN
+    DBMS_OUTPUT.PUT_LINE('CUSTOMERID cannot be FOUND please create a new customer account or insert correct customerid');
+WHEN s_deliveryaddressisnull THEN
+    DBMS_OUTPUT.PUT_LINE('please enter delivery address');    
+    
+end;
+/
+
+
+
+create or replace procedure procorder_items(
+x_orderidins order_items.orderid%type,
+x_productidins order_items.productid%type,
+x_quantityins order_items.quantity%type
+)
+as
+countorderid number := 0;
+countproductid number := 0;
+x_priceins order_items.product_price%type := getprice(x_productidins);
+s_countorderid EXCEPTION;
+s_countproductid EXCEPTION;
+s_invquantity EXCEPTION;
+
+begin
+
+SELECT count(*) into countorderid from orders where orderid = x_orderidins;
+if countorderid<1 then
+raise s_countorderid;
+end if;
+SELECT count(*) into countproductid from product where productid = x_productidins;
+if countproductid<1 then
+raise s_countproductid;
+end if;
+IF x_quantityins < 1 THEN
+RAISE s_invquantity;
+end if;
+
+insert into order_items(orderid, productid, quantity, product_price) 
+values(x_orderidins, x_productidins, x_quantityins, x_priceins);
+
+exception
+    when s_countorderid then
+        DBMS_OUTPUT.PUT_LINE('Orderid does not exist');
+    when s_countproductid then
+        DBMS_OUTPUT.PUT_LINE('Productid does not exist');
+    when s_invquantity then
+        DBMS_OUTPUT.PUT_LINE('Quantity cannot be 0');
+end;
+/
+
+
