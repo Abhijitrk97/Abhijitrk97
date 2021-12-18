@@ -979,6 +979,21 @@ exception
 end;
 
 
+
+---procedure to assign delivery partner to order
+
+CREATE OR REPLACE PROCEDURE assigndelipartner
+(
+x_transorderid deliveredby.orderid%type
+)
+AS
+x_partnerid number:=getpartner;
+Begin
+INSERT INTO deliveredby(partner_id, orderid ) VALUES(x_partnerid, x_transorderid);
+END;
+/
+
+
 ---Procedure to make payment and complete order
 
 
@@ -1046,6 +1061,8 @@ UPDATE transactions
 SET modeof_payment=x_modeofpayment, card_type=x_cardtype, card_number=x_cardtype, transaction_date= sysdate, card_expirydate=x_cardexpirydate, payment_status = paymentstate
 WHERE orderid=x_transorderid;
 
+EXEC assigndelipartner(x_transorderid);
+
 EXCEPTION
 
 WHEN s_transorderid THEN
@@ -1070,17 +1087,4 @@ WHEN s_cardexpired THEN
 END;
 /
 
-
----procedure to assign delivery partner to order
-
-CREATE OR REPLACE PROCEDURE assigndelipartner
-(
-x_transorderid deliveredby.orderid%type
-)
-AS
-x_partnerid number:=getpartner;
-Begin
-INSERT INTO deliveredby(partner_id, orderid ) VALUES(x_partnerid, x_transorderid);
-END;
-/
 
