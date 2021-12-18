@@ -793,7 +793,8 @@ end;
 /
 
 --- Procedure to file returns
-
+create sequence seq_ret start with 1000
+increment by 1;
 
 create or replace procedure proc_ret
 (
@@ -805,7 +806,7 @@ create or replace procedure proc_ret
 )
 
 AS 
-
+countprodret number;
 countret number;
 r_cusid exception;
 r_orid exception;
@@ -813,7 +814,7 @@ r_proid exception;
 r_quant exception;
 r_parid exception;
 r_dupcol exception;
-
+r_countprodret exception;
 BEGIN
 
 if x_customid is NULL
@@ -837,12 +838,17 @@ select count(*) into countret from returns where customerid = x_customid and ord
 if countret > 0 then
     raise r_dupcol;
 end if;
-
+select count(*) into countprodret from order_items where productid = x_produid and orderid = x_ordid;
+if countprodret < 1 then
+    raise r_countprodret;
+end if;
 insert into returns(returnid,customerid,orderid, product_id,quantity, partnerid)
 values(seq_ret.nextval,x_customid,x_ordid,x_produid,x_quant,x_partid);
 
 EXCEPTION
 
+when r_countprodret then
+    DBMS_OUTPUT.PUT_LINE('Unable to find product in your order, Please check your ordered products.');
 when r_cusid then
     DBMS_OUTPUT.PUT_LINE('customer id cannot be null');
 when r_orid then
@@ -858,6 +864,7 @@ when r_dupcol then
 
 end;
 /
+
 
 ---Procedure to generate orderid and transactionid for both orders and transaction table
 
