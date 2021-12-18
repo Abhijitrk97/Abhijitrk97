@@ -48,3 +48,12 @@ END is_numeric;
 /
 
 
+CREATE OR REPLACE FUNCTION getpartner
+RETURN deliveredby.partner_id%TYPE
+IS
+varpartner number:=0;
+BEGIN
+SELECT partner_id into varpartner from (SELECT partner_id from (SELECT count(partner_id), partner_id from deliveredby group by partner_id order by count(partner_id))fetch first 1 rows only);
+RETURN varpartner;
+END;
+/
