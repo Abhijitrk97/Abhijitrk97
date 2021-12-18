@@ -719,10 +719,12 @@ end;
 )
 
 AS
-    countComb number;
+    countsuppid number:=0;
+    countComb number:=0;
     s_invInventoryId exception;
     s_invProductId exception;
     s_invDupcol exception;
+    s_countsuppid exception;
 BEGIN
     
     if x_invInventoryId is NULL
@@ -743,7 +745,10 @@ BEGIN
     if countComb > 0 then
         raise s_invDupcol;
     end if;
-
+    select count(*) into countsuppid from inventory where inventory_id = x_invInventoryId;
+    if countsuppid < 1 then
+        raise s_countsuppid;
+    end if;
 
 insert into inventory_product(inventory_id,productid,quantity)
 values (x_invInventoryId,x_invProductId,x_invQuantity);
@@ -758,7 +763,8 @@ when s_invProductId then
     
 when s_invDupcol then
     DBMS_OUTPUT.PUT_LINE('The information of the product in the inventory already exists!');
-
+when s_countsuppid then
+    DBMS_OUTPUT.PUT_LINE('Supplier id does not exist');
 
 end;
 /
