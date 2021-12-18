@@ -1,16 +1,12 @@
-create sequence seq_cust start with 1000
-increment by 1;
-
-set serveroutput ON;
-
-create or replace procedure cust_proc
+--- customers table customer id creation procedure
+CREATE OR REPLACE PROCEDURE cust_proc
 (
     x_fname customers.customer_fname%TYPE,
     x_lname customers.customer_lname%TYPE,
     x_gender customers.customer_gender%TYPE,
     x_phno customers.customer_phno%TYPE,
     x_email customers.customer_email%TYPE,
-    x_dob customers.customer_DOB%TYPE,
+    x_dob customers.customer_dob%TYPE,
     x_address customers.street_address%TYPE,
     x_aptno customers.apt_house_no%TYPE,
     x_city customers.city%TYPE,
@@ -19,21 +15,147 @@ create or replace procedure cust_proc
     x_zip customers.zip%TYPE
 )
 AS
+    countEmail NUMBER;
+    countPhno NUMBER;
 
-BEGIN
-insert into customers(customerid,customer_fname,customer_lname,customer_gender,customer_phno,customer_email,customer_DOB,street_address,apt_house_no,city,state,country,zip)
-values(seq_cust.nextval,x_fname,x_lname,x_gender,x_phno,x_email,x_dob,x_address,x_aptno,x_city,x_state,x_country,x_zip);
+    s_fname EXCEPTION;
+    s_lname EXCEPTION;
+    s_gender EXCEPTION;
+    s_phno EXCEPTION;
+    s_email EXCEPTION;
+    s_dob EXCEPTION;
+    s_address EXCEPTION;
+    s_aptno EXCEPTION;
+    s_city EXCEPTION;
+    s_state EXCEPTION;
+    s_country EXCEPTION;
+    s_zip EXCEPTION;
+    ss_gender customers.customer_gender%TYPE;
+    dup_email EXCEPTION;
+    dup_phno EXCEPTION;
+
+    
+Begin
+
+IF x_fname IS NULL
+THEN RAISE s_fname;
+
+IF x_lname Is Null
+THEN RAISE s_lname;
+
+IF x_gender IS NULL
+THEN RAISE s_gender;
+
+If x_phno IS NULL
+THEN RAISE s_phno;
+
+IF x_email Is Null
+THEN RAISE s_email;
+
+IF x_dob IS NULL
+THEN RAISE s_dob;
+
+IF x_address IS NULL
+THEN RAISE s_address;
+
+IF x_aptno Is Null
+THEN RAISE s_aptno;
+
+IF x_city IS NULL
+THEN RAISE s_city;
+
+If x_state IS NULL
+THEN RAISE s_state;
+
+IF x_country IS NULL
+THEN Raise s_country;
+
+IF x_zip IS NULL
+THEN RAISE s_zip;
+
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+END IF;
+
+SELECT COUNT(*) INTO countEmail FROM customers WHERE customer_email = x_email;
+IF countEmail > 0 THEN
+    RAISE dup_email;
+END IF;
+
+SELECT COUNT(*) INTO countPhno From customers WHERE customer_phno = x_phno;
+IF countPhno > 0 THEN
+    RAISE dup_phno;
+END IF;
+
+select x_gender into ss_gender from dual where x_gender IN ('M','F','T');
+
+INSERT INTO customers(customerid,customer_fname,customer_lname,customer_gender,customer_phno,customer_email,customer_dob,street_address,apt_house_no,city,state,country,zip)
+VALUES(seq_cust.nextval,x_fname,x_lname,x_gender,x_phno,x_email,x_dob,x_address,x_aptno,x_city,x_state,x_country,x_zip);
+
+
+    
 
 EXCEPTION
-    WHEN DUP_VAL_ON_INDEX THEN
-        DBMS_OUTPUT.PUT_LINE('Email cannot be repeated ');
 
-end;
-/
+    WHEN dup_email THEN
+        dbms_output.put_line('Email cannot be repeated ');
+        
+    WHEN dup_phno THEN
+        dbms_output.put_line('Phone number cannot be repeated ');
+        
+    When s_fname THEN
+        dbms_output.put_line('First Name cannot be null');
+
+    WHEN s_lname THEN
+        dbms_output.put_line('Last Name cannot be null');
+
+    WHEN s_gender THEN
+        dbms_output.put_line('Gender value cannot be null');
+
+    When s_phno THEN
+        dbms_output.put_line('Phone number cannot be null');
+        
+    WHEN s_email THEN
+        dbms_output.put_line('Email ID cannot be null');
+        
+    WHEN s_dob THEN
+        dbms_output.put_line('Date of Birth cannot be null');
+        
+    When s_address THEN
+        dbms_output.put_line('Address cannot be null');
+        
+    WHEN s_aptno THEN
+        dbms_output.put_line('Apartment number cannot be null');
+        
+    WHEN s_city THEN
+        dbms_output.put_line('City cannot be null');
+        
+    WHEN s_state THEN
+        dbms_output.put_line('State cannot be null');
+        
+    WHEN s_country THEN
+        dbms_output.put_line('Country cannot be null');
+        
+    WHEN s_zip THEN
+        dbms_output.put_line('Zip cannot be null');
+        
+    WHEN no_data_found THEN
+        dbms_output.put_line('(M/F/T) genders entry only');
+
+END;
 
 
 
-
+---delivery partner procedure
 create sequence seq_dlvptn start with 1000
 increment by 1;
 
@@ -70,8 +192,7 @@ end;
 
 
 
-
-
+--- Procedure for supplier table inserts
 
 
 create sequence seq_supplier start with 1000
@@ -120,6 +241,8 @@ end;
 
 
 
+--- Procedure for Category Table
+
 
 create sequence seq_cat start with 100
 increment by 1;
@@ -163,59 +286,155 @@ end;
 
 
 
-
-
-create sequence seq_orderitems start with 1000
+create sequence seq_prod start with 100
 increment by 1;
-set SERVEROUTPUT ON;
 
-create or replace procedure proc_ordersitems 
+
+create sequence seq_prod start with 100
+increment by 1;
+
+
+create or replace procedure proc_prod
 (
-    x_orderitemsorderid order_items.orderid%TYPE,
-    x_orderitemsproductid order_items.productid%TYPE,
-    x_orderitemsquantity order_items.quantity%TYPE
-)
-AS
 
-s_orderitemsorderidnull exception;
-s_orderitemsproductid exception;
-s_orderitemsquantity exception;
+x_price product.price%TYPE,
+x_expiry product.expiry_date%TYPE,
+x_productnm product.product_name%TYPE,
+x_descrip product.description%TYPE,
+x_brand product.brand%TYPE,
+x_supid product.supplier_id%TYPE,
+x_catid product.category_id%TYPE
+)
+
+AS
+countcatidincat number;
+countprod number;
+pr_pricenull exception;
+pr_expirynull exception;
+pr_prodnamenull exception;
+pr_descnull exception;
+pr_brandnull exception;
+pr_supidnull exception;
+pr_catidnull exception;
+pr_dupcol exception;
+pr_countcatidincat exception;
 
 BEGIN
 
+if x_price is NULL
+then raise pr_pricenull;
+if x_expiry is NULL
+then raise pr_expirynull;
+if x_productnm is NULL
+then raise pr_prodnamenull;
+if x_descrip is NULL
+then raise pr_descnull;
+if x_brand is NULL
+then raise pr_brandnull;
+if x_supid is NULL
+then raise pr_supidnull;
+if x_catid is NULL
+then raise pr_catidnull;
 
-
-
-if x_orderitemsorderid is null then
-  raise s_orderitemsorderidnull;
-IF x_orderitemsproductid is null then
-    raise s_orderitemsproductid;
-IF x_orderitemsquantity is null then
-    raise s_orderitemsquantity;
-    
-    
 end if;
 end if;
 end if;
+end if;
+end if;
+end if;
+end if;
 
+select count(*) into countcatidincat from category where category_id=x_catid ;
+if countcatidincat < 1 then
+	raise pr_countcatidincat ;
+end if;
+select count(*) into countprod from product where product_name = x_productnm;
+if countprod > 0 then
+    raise pr_dupcol;
+end if;
 
-
-insert into order_items(orderid, productid,quantity)
-values(x_orderitemsorderid,x_orderitemsproductid, x_orderitemsquantity);
+insert into product(productid,upc_code,sku_code,price,expiry_date,product_name,description,brand,supplier_id,category_id)
+values(seq_prod.nextval,seq_upc.nextval,seq_sku.nextval,x_price,x_expiry,x_productnm,x_descrip,x_brand,x_supid,x_catid);
 
 EXCEPTION 
-    when s_orderitemsorderidnull then
-        DBMS_OUTPUT.PUT_LINE('Please fill all the details, orderid cannot be blank');
-    when s_orderitemsproductid then
-        DBMS_OUTPUT.PUT_LINE('Please fill productid');
-    when s_orderitemsquantity then
-        DBMS_OUTPUT.PUT_LINE('Enter quantity cannot be null');
+when pr_countcatidincat  then
+     DBMS_OUTPUT.PUT_LINE('Categoryid invalid as it does not exist in category table');
+when pr_pricenull then
+     DBMS_OUTPUT.PUT_LINE('price value cannot be null');
+when pr_expirynull then
+     DBMS_OUTPUT.PUT_LINE('expiry date cannot be null');
+when pr_prodnamenull then
+     DBMS_OUTPUT.PUT_LINE('product name cannot be null');
+when pr_descnull then
+     DBMS_OUTPUT.PUT_LINE('description cannot be null');
+when pr_brandnull then
+     DBMS_OUTPUT.PUT_LINE('brand name cannot be null');
+when pr_supidnull then
+     DBMS_OUTPUT.PUT_LINE('supplier id cannot be null');
+when pr_catidnull then
+     DBMS_OUTPUT.PUT_LINE('category id cannot be null');
+when pr_dupcol then
+    DBMS_OUTPUT.PUT_LINE('that product already exists');
 
 end;
-/ 
+/
 
 
 
+
+---Procedure for location.
+
+
+create sequence seq_loc start with 100
+increment by 1;
+
+set serveroutput on;
+create or replace procedure proc_loc
+(
+  
+  x_locname location.location_name%TYPE,
+  x_locmgrid location.location_mgrid%TYPE
+)
+
+AS 
+
+countloc number;
+l_locname exception;
+l_locmgrid exception;
+l_dupcol exception;
+
+BEGIN
+if x_locname is NULL 
+then raise l_locname;
+if x_locmgrid is NULL
+then raise l_locmgrid;
+end if;
+end if;
+
+select count(*) into countloc from location where location_name = x_locname and location_mgrid = x_locmgrid;
+if countloc > 0 then
+    raise l_dupcol;
+end if;
+
+insert into location(locationno,location_name,location_mgrid)
+values(seq_loc.nextval,x_locname,x_locmgrid);
+
+EXCEPTION
+when l_locname then 
+    DBMS_OUTPUT.PUT_LINE('location name cannot be null');
+when l_locmgrid then
+    DBMS_OUTPUT.PUT_LINE('Manager Id cannot be null');
+when l_dupcol then
+    DBMS_OUTPUT.PUT_LINE('combination of location name and location manager id already exists');
+end;
+/
+
+
+
+
+
+
+---Procedure for Department table inserts.
 
 create sequence seq_dep start with 1
 increment by 1;
@@ -274,138 +493,7 @@ end;
 
 
 
-
-
-
-
-
-create sequence seq_loc start with 100
-increment by 1;
-
-set serveroutput on;
-create or replace procedure proc_loc
-(
-  
-  x_locname location.location_name%TYPE,
-  x_locmgrid location.location_mgrid%TYPE
-)
-
-AS 
-
-countloc number;
-l_locname exception;
-l_locmgrid exception;
-l_dupcol exception;
-
-BEGIN
-if x_locname is NULL 
-then raise l_locname;
-if x_locmgrid is NULL
-then raise l_locmgrid;
-end if;
-end if;
-
-select count(*) into countloc from location where location_name = x_locname and location_mgrid = x_locmgrid;
-if countloc > 0 then
-    raise l_dupcol;
-end if;
-
-insert into location(locationno,location_name,location_mgrid)
-values(seq_loc.nextval,x_locname,x_locmgrid);
-
-EXCEPTION
-when l_locname then 
-    DBMS_OUTPUT.PUT_LINE('location name cannot be null');
-when l_locmgrid then
-    DBMS_OUTPUT.PUT_LINE('Manager Id cannot be null');
-when l_dupcol then
-    DBMS_OUTPUT.PUT_LINE('combination of location name and location manager id already exists');
-end;
-/
-
-
-
-
-
-create or replace procedure proc_prod
-(
-
-x_price product.price%TYPE,
-x_expiry product.expiry_date%TYPE,
-x_productnm product.product_name%TYPE,
-x_descrip product.description%TYPE,
-x_brand product.brand%TYPE,
-x_supid product.supplier_id%TYPE,
-x_catid product.category_id%TYPE
-)
-
-AS
-
-countprod number;
-pr_pricenull exception;
-pr_expirynull exception;
-pr_prodnamenull exception;
-pr_descnull exception;
-pr_brandnull exception;
-pr_supidnull exception;
-pr_catidnull exception;
-pr_dupcol exception;
-
-BEGIN
-
-if x_price is NULL
-then raise pr_pricenull;
-if x_expiry is NULL
-then raise pr_expirynull;
-if x_productnm is NULL
-then raise pr_prodnamenull;
-if x_descrip is NULL
-then raise pr_descnull;
-if x_brand is NULL
-then raise pr_brandnull;
-if x_supid is NULL
-then raise pr_supidnull;
-if x_catid is NULL
-then raise pr_catidnull;
-
-end if;
-end if;
-end if;
-end if;
-end if;
-end if;
-end if;
-
-select count(*) into countprod from product where product_name = x_productnm;
-if countprod > 0 then
-    raise pr_dupcol;
-end if;
-
-insert into product(productid,upc_code,sku_code,price,expiry_date,product_name,description,brand,supplier_id,category_id)
-values(seq_prod.nextval,seq_upc.nextval,seq_sku.nextval,x_price,x_expiry,x_productnm,x_descrip,x_brand,x_supid,x_catid);
-
-EXCEPTION 
-when pr_pricenull then
-     DBMS_OUTPUT.PUT_LINE('price value cannot be null');
-when pr_expirynull then
-     DBMS_OUTPUT.PUT_LINE('expiry date cannot be null');
-when pr_prodnamenull then
-     DBMS_OUTPUT.PUT_LINE('product name cannot be null');
-when pr_descnull then
-     DBMS_OUTPUT.PUT_LINE('description cannot be null');
-when pr_brandnull then
-     DBMS_OUTPUT.PUT_LINE('brand name cannot be null');
-when pr_supidnull then
-     DBMS_OUTPUT.PUT_LINE('supplier id cannot be null');
-when pr_catidnull then
-     DBMS_OUTPUT.PUT_LINE('category id cannot be null');
-when pr_dupcol then
-    DBMS_OUTPUT.PUT_LINE('that product already exists');
-
-end;
-/
-
-
+---procedure for employees insertion
 
 
 create sequence seq_emp start with 1000
@@ -447,9 +535,11 @@ AS
     e_empaddss exception;
     e_empdeptnum exception;
     e_empmid exception;
+    e_invsal exception;
     e_empsal exception;
     e_empdupcol exception;
     e_empdupphno exception;
+    e_empphnoint exception;
 
 BEGIN
 
@@ -465,6 +555,10 @@ then raise e_empgend;
 if x_empdateofb is NULL
 then raise e_empdateofb;
 
+if is_numeric(x_empphnum)=0 THEN
+    RAISE e_empphnoint;
+
+
 if x_empphnum is NULL
 then raise e_empphnum;
 
@@ -473,6 +567,9 @@ then raise e_empem;
 
 if x_empsal is NULL
 then raise e_empsal;
+
+if is_numeric(x_empsal)=0 THEN
+    RAISE e_invsal;
 
 if x_empaddss is NULL
 then raise e_empaddss;
@@ -493,7 +590,8 @@ end if;
 end if;
 end if;
 end if;
-
+end if;
+end if;
 
 select count(*) into countph from employees where phnumber = x_empphnum;
 if countph > 0 then
@@ -512,6 +610,10 @@ values(seq_emp.nextval,x_empfirstname,x_emplastname,x_empgend,x_empdateofb,x_emp
 
 EXCEPTION
 
+
+when e_empphnoint then
+    DBMS_OUTPUT.PUT_LINE('employee phone number can only be integers');
+    
 when e_empfirstname then
     DBMS_OUTPUT.PUT_LINE('First Name cannot be null');
     
@@ -536,6 +638,8 @@ when e_empem then
 when e_empsal then
     DBMS_OUTPUT.PUT_LINE('salary cannot be null');
 
+when e_invsal then
+    DBMS_OUTPUT.PUT_LINE('salary can only be numeric');
 when e_empdeptnum then
     DBMS_OUTPUT.PUT_LINE('Department number cannot be null');
     
@@ -551,9 +655,61 @@ end;
 /
 
 
+---procedure for inventory details insertion
 
 
+create sequence seq_inventory start with 100
+increment by 1;
 
+create or replace procedure proc_inventory
+(
+    x_inInventoryName inventory.inventory_name%TYPE,
+    x_inStorageSpace inventory.storage_space%TYPE,
+    x_invlocation inventory.invlocation%type
+)
+
+AS
+    
+    s_inInventoryName exception;
+    s_inStorageSpace exception;
+    s_inInventoryloc exception;
+    
+    
+BEGIN
+
+    if x_invlocation is NULL
+    then raise s_inInventoryloc;   
+    
+    if x_inInventoryName is NULL
+    then raise s_inInventoryName;
+    
+    if x_inStorageSpace is NULL
+    then raise s_inStorageSpace;
+    
+    end if;
+    end if;
+    end if;
+    
+insert into inventory(inventory_id,inventory_name,storage_space, invlocation) 
+values (seq_inventory.nextval,x_inInventoryName,x_inStorageSpace,x_invlocation);
+
+EXCEPTION
+
+when s_inInventoryName then
+    DBMS_OUTPUT.PUT_LINE('Inventory name cannot be null');
+
+when s_inStorageSpace then
+    DBMS_OUTPUT.PUT_LINE('Storage Space details cannot be null');
+
+when s_inInventoryloc then
+    DBMS_OUTPUT.PUT_LINE('Inventory location cannot be null');
+
+    
+end;
+/
+
+
+--- Procedure for Inventory product
 
  create or replace procedure proc_inv_prod
 (
@@ -607,6 +763,7 @@ when s_invDupcol then
 end;
 /
 
+--- Procedure for Supplier Inventory
 
 
 create or replace procedure proc_suppin
@@ -635,6 +792,7 @@ when dupcolsup then
 end;
 /
 
+--- Procedure to file returns
 
 
 create or replace procedure proc_ret
@@ -701,61 +859,7 @@ when r_dupcol then
 end;
 /
 
-
-
-
-create sequence seq_inventory start with 100
-increment by 1;
-
-create or replace procedure proc_inventory
-(
-    x_inInventoryName inventory.inventory_name%TYPE,
-    x_inStorageSpace inventory.storage_space%TYPE
-)
-
-AS
-    
-    s_inInventoryName exception;
-    s_inStorageSpace exception;
-    
-    
-BEGIN
-    
-    if x_inInventoryName is NULL
-    then raise s_inInventoryName;
-    
-    if x_inStorageSpace is NULL
-    then raise s_inStorageSpace;
-    
-    end if;
-    end if;
-    
-insert into inventory(inventory_id,inventory_name,storage_space) 
-values (seq_inventory.nextval,x_inInventoryName,x_inStorageSpace);
-
-EXCEPTION
-
-when s_inInventoryName then
-    DBMS_OUTPUT.PUT_LINE('Inventory name cannot be null');
-
-when s_inStorageSpace then
-    DBMS_OUTPUT.PUT_LINE('Storage Space details cannot be null');
-    
-end;
-/
-
-
- 
-
- 
-create sequence seq_orders start with 1000
-increment by 1;
-
-create sequence seq_transaction start with 1000
-increment by 1;
-
-set SERVEROUTPUT ON;
-
+---Procedure to generate orderid and transactionid for both orders and transaction table
 
 create or replace procedure procgenorderid(
 x_customerid orders.customerid%type,
@@ -803,7 +907,7 @@ WHEN s_deliveryaddressisnull THEN
 end;
 /
 
-
+--- Insert products into order_items or cart.
 
 create or replace procedure procorder_items(
 x_orderidins order_items.orderid%type,
@@ -845,10 +949,7 @@ exception
 end;
 /
 
-
-
-
-
+---Procedure to populate final amount
 
 create or replace procedure populateamount(
 x_finorderid orders.orderid%type
@@ -876,8 +977,9 @@ exception
         DBMS_OUTPUT.PUT_LINE('Orderid does not exist');
         
 end;
-/
 
+
+---Procedure to make payment and complete order
 
 
 create or replace PROCEDURE completetransaction(
@@ -889,6 +991,7 @@ x_cardexpirydate transactions.card_expirydate%type,
 x_transaction_date transactions.transaction_date%type
 )
 AS
+paymentstate char :=Y;
 counttransorder NUMBER:=0;
 s_transorderid EXCEPTION;
 s_transorderidnotexist EXCEPTION;
@@ -940,7 +1043,7 @@ END IF;
 
 
 UPDATE transactions
-SET modeof_payment=x_modeofpayment, card_type=x_cardtype, card_number=x_cardtype, transaction_date= sysdate, card_expirydate=x_cardexpirydate
+SET modeof_payment=x_modeofpayment, card_type=x_cardtype, card_number=x_cardtype, transaction_date= sysdate, card_expirydate=x_cardexpirydate, payment_status = paymentstate
 WHERE orderid=x_transorderid;
 
 EXCEPTION
@@ -966,3 +1069,6 @@ WHEN s_cardexpired THEN
 
 END;
 /
+
+
+
