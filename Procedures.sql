@@ -1006,7 +1006,8 @@ x_cardexpirydate transactions.card_expirydate%type,
 x_transaction_date transactions.transaction_date%type
 )
 AS
-paymentstate char :=Y;
+valueto_pass number;
+paymentstate char :='Y';
 counttransorder NUMBER:=0;
 s_transorderid EXCEPTION;
 s_transorderidnotexist EXCEPTION;
@@ -1060,8 +1061,8 @@ END IF;
 UPDATE transactions
 SET modeof_payment=x_modeofpayment, card_type=x_cardtype, card_number=x_cardtype, transaction_date= sysdate, card_expirydate=x_cardexpirydate, payment_status = paymentstate
 WHERE orderid=x_transorderid;
-
-EXEC assigndelipartner(x_transorderid);
+valueto_pass :=x_transorderid;
+assigndelipartner(valueto_pass);
 
 EXCEPTION
 
@@ -1086,5 +1087,6 @@ WHEN s_cardexpired THEN
 
 END;
 /
+
 
 
