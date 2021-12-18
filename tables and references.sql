@@ -1,3 +1,4 @@
+
 CREATE TABLE location (
   locationno number PRIMARY KEY,
   location_name varchar(20),
@@ -21,6 +22,7 @@ CREATE TABLE employees (
   phnumber number,
   address varchar(20),
   email varchar(20),
+  salary number,
   deptno number,
   mgrid number,
   FOREIGN KEY (deptno) REFERENCES department (deptno)
@@ -30,8 +32,7 @@ CREATE TABLE employees (
 CREATE TABLE deliverypartner (
   partner_id number primary key,
   partner_no number,
-  partner_name varchar(255),
-  delivery_status char
+  partner_name varchar(255)
   
 );
 
@@ -50,7 +51,8 @@ CREATE TABLE supplier (
 CREATE TABLE inventory (
   inventory_id number PRIMARY KEY,
   inventory_name varchar(20),
-  storage_space number
+  storage_space number,
+  invlocation varchar(20)
 );
 
 
@@ -96,19 +98,6 @@ CREATE TABLE inventory_product (
 );
 
 
-CREATE TABLE transactions (
-  transaction_id number,
-  orderid number primary key,
-  modeof_payment varchar(20),
-  card_type varchar(20),
-  card_number number,
-  card_expirydate date,
-  payment_status char,
-  transaction_date date
-);
-
-
-
 CREATE TABLE customers (
   customerid number PRIMARY KEY,
   customer_fname varchar(20),
@@ -141,10 +130,21 @@ CREATE TABLE orders (
   delivery_address varchar(20),
   transaction_id number,
   order_date date,
-  FOREIGN KEY (orderid) REFERENCES transactions (orderid),
-  FOREIGN KEY (customerid) REFERENCES customers (customerid),
-  Foreign key (orderid) references returns
+  FOREIGN KEY (customerid) REFERENCES customers (customerid)
 );
+
+CREATE TABLE transactions (
+  transaction_id number primary key,
+  orderid number ,
+  modeof_payment varchar(20),
+  card_type varchar(20),
+  card_number number,
+  card_expirydate date,
+  payment_status char,
+  transaction_date date,
+  FOREIGN KEY (orderid) REFERENCES orders (orderid)
+);
+
 
 CREATE TABLE order_items (
   orderid number,
@@ -159,8 +159,8 @@ CREATE TABLE order_items (
 CREATE TABLE deliveredby(
 partner_id number,
 orderid number,
+delivery_status char,
 primary key(partner_id, orderid),
 FOREIGN KEY (partner_id) REFERENCES deliverypartner (partner_id),
 FOREIGN KEY (orderid) REFERENCES orders (orderid)
 );
-
