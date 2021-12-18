@@ -1095,5 +1095,39 @@ WHEN s_cardexpired THEN
 END;
 /
 
+--- Procedure to delete products from cart
 
+
+create or replace procedure proc_delorderitems
+(
+    x_orderid returns.orderid%TYPE,
+    x_productid returns.product_id%TYPE
+)
+
+AS 
+x_countorderid number:=0;
+s_countorderid exception;
+s_productid exception;
+s_orderid exception;
+BEGIN
+IF x_orderid is null then
+    raise s_orderid;
+end if;
+SELECT count(*) into x_countorderid FROM order_items where orderid= x_orderid and productid = x_productid;
+if x_countorderid < 1 then
+    raise s_countorderid;
+end if;
+
+delete from order_items WHERE orderid=x_orderid and productid= x_productid;
+dbms_output.put_line('Product has been removed from your cart');
+
+EXCEPTION
+when s_orderid then
+    dbms_output.put_line('Order id cannot be null');
+when s_productid then
+    dbms_output.put_line('Product id cannot be null');
+WHEN s_countorderid then
+    dbms_output.put_line('product not found in your cart');
+end;
+/
 
