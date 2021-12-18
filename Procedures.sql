@@ -1071,4 +1071,16 @@ END;
 /
 
 
+---procedure to assign delivery partner to order
+
+CREATE OR REPLACE PROCEDURE assigndelipartner
+(
+x_transorderid deliveredby.orderid%type
+)
+AS
+x_partnerid number:=getpartner;
+Begin
+INSERT INTO deliveredby(partner_id, orderid ) VALUES(x_partnerid, x_transorderid);
+END;
+/
 
