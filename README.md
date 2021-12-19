@@ -1,10 +1,7 @@
-- 👋 Hi, I’m Abhijit Kunjiraman
-- 👀 I’m interested in Data Science
-- 🌱 I’m currently learning ORACLE SQL
-- 💞️ I’m looking to collaborate on SQL based projects
-- 📫 How to reach me abhijitrk1997@gmail.com
-
-<!---
-Abhijitrk97/Abhijitrk97 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+Steps for running project
+for dmdd project
+run tables and references
+run indexes
+run functionsseqindexview contains everything apart from procedures and also contains prerequisite for procedures
+run package.
+(In order to prepopulate table with data with sample data run file prepopulate and execute the procedure)
