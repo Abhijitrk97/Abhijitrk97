@@ -192,7 +192,7 @@ SELECT  EXTRACT(year from order_date) year, sum(amount) as total FROM orders
 GROUP BY EXTRACT(YEAR FROM order_date) Order by year desc;
 
 ---Triggers
-
+/*
 CREATE OR REPLACE TRIGGER transactions_trigger1
 AFTER INSERT
    ON transactions
@@ -210,7 +210,7 @@ BEGIN
     UPDATE Deliveredby set delivery_status = 'Completed' WHERE delivery_status = :new.delivery_status;
     DBMS_OUTPUT.PUT_LINE('Delivery - ' || :new.delivery_status || ' completed successfully - by deliveredby_trigger1 Trigger');
 END;
-/
+*/
 
 
 --- Access
